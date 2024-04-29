@@ -1,0 +1,1536 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: CodeHodgehog API
+  description: 'API for Backend subject HITs 2021'
+  contact: {}
+securityDefinitions: {}
+consumes:
+- application/json
+- multipart/form-data
+- text/plain
+produces:
+- application/json
+paths:
+  /login:
+    post:
+      description: Login to existing account. Available only for unauthorized users.
+      summary: /api/login
+      tags:
+      - Auth
+      operationId: LoginPost
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/auth'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Your authorization bearer token.
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Username or password are wrong.
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  /logout:
+    post:
+      description: Logout from your account. Available only for authorized user
+      summary: /api/logout
+      tags:
+      - Auth
+      operationId: LogoutPost
+      deprecated: false
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      responses:
+        '200':
+          description: OK. User logged out.
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. User already logged out
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  /register:
+    post:
+      description: Register new account. Available only for unauthorized users.
+      summary: /api/register
+      tags:
+      - Auth
+      operationId: RegisterPost
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/register'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Your authorization bearer token.       
+        '400':
+          description: Bad request. For example, user with the same username already exist.
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  
+  /users:
+    get:
+      description: List of all users in system. Available only for admin
+      summary: /api/users
+      tags:
+      - User Data
+      operationId: userList
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/userShortModel'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  /users/{userId}:
+    get:
+      description: Get detailed data for specified user. Available only for admin or if (requestUserId == userId)
+      summary: /api/users/{userId}
+      tags:
+      - User Data
+      operationId: UserGet
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: userId
+        in: path
+        required: true
+        type: integer
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/userExtendedModel'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+    patch:
+      description: 'Edit data for concrete user (except edit role)'
+      summary: /api/users/{userId}
+      tags:
+      - User Data
+      operationId: UserPatch
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: userId
+        in: path
+        required: true
+        type: string
+        description: ''
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/userEditModel'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/userExtendedModel'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      description: 'Delete concrete user (except edit role)'
+      summary: /api/users/{userId}
+      tags:
+      - User Data
+      operationId: DeleteUser
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: userId
+        in: path
+        required: true
+        type: string
+        description: ''
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: object
+            properties:
+              message: 
+                type: string
+                example: 'OK'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  /users/{userId}/role:
+    post:
+      description: 'Edit role for specified user. Available only for admin'
+      summary: /api/users/{userId}/role
+      tags:
+      - User Data
+      operationId: EditUserRole
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: userId
+        in: path
+        required: true
+        type: string
+        description: ''
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          type: object
+          properties:
+            roleId:
+              type: integer
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: object
+            properties:
+              message: 
+                type: string
+                example: 'OK'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  
+  /roles:
+    get:
+      description: List of all roles in system. Available only for admin
+      summary: /api/roles
+      tags:
+      - Roles
+      operationId: roleList
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/role'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  /roles/{roleId}:
+    get:
+      description: Get selected role. Available only for admin
+      summary: /api/roles/{roleId}
+      tags:
+      - Roles
+      operationId: getRole
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: roleId
+        in: path
+        required: true
+        type: integer
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/role'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+
+  /topics:
+   get:
+    description: List of all topics in system.
+    summary: /api/topics
+    tags:
+    - Topics
+    operationId: topicList
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - in: query
+      name: name
+      type: string
+      description: Filtration parameter by name.
+    - in: query
+      name: parent
+      type: integer
+      description: Filtration parameter by topic parrentId.
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/topicShortModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   post:
+    description: Create new topic in system. Available only for admin
+    summary: /api/topics
+    tags:
+    - Topics
+    operationId: topicCreate
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: Body
+      in: body
+      required: true
+      description: ''
+      schema:
+        $ref: '#/definitions/topicCreateModel'
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/topicExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /topics/{topicId}:
+   get:
+    description: Description of current topic.
+    summary: /api/topics/{topicId}
+    tags:
+    - Topics
+    operationId: topicDetails
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: topicId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/topicExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   patch:
+    description: Edit existing topic in system. Available only for admin
+    summary: /api/topics/{topicId}
+    tags:
+    - Topics
+    operationId: topicEdit
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: topicId
+      in: path
+      required: true
+      type: integer
+    - name: Body
+      in: body
+      required: true
+      description: ''
+      schema:
+        $ref: '#/definitions/topicCreateModel'
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/topicExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   delete:
+    description: Delete current topic. Available only for admin
+    summary: /api/topics/{topicId}
+    tags:
+    - Topics
+    operationId: topicDelete
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: topicId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: object
+          properties:
+            message: 
+              type: string
+              example: 'OK'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /topics/{topicId}/childs:
+    get:
+      description: List of childs of current topic.
+      summary: /api/topics/{topicId}/childs
+      tags:
+      - Topics
+      operationId: topicChilds
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: topicId
+        in: path
+        required: true
+        type: integer
+      responses:
+        '200':
+          description: OK.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/topicShortModel'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+    post:
+      description: Add childs to current topic. Available only for admin
+      summary: /api/topics/{topicId}/childs
+      tags:
+      - Topics
+      operationId: topicChildsAdd
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: topicId
+        in: path
+        required: true
+        type: string
+        description: ''
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          type: array
+          items:
+            type: integer
+          example: [2, 7]
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/topicExtendedModel'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      description: Remove childs from current topic. Available only for admin
+      summary: /api/topics/{topicId}/childs
+      tags:
+      - Topics
+      operationId: topicChildsRemove
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        default: Bearer {token}
+        type: string
+      - name: topicId
+        in: path
+        required: true
+        type: string
+        description: ''
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          type: array
+          items:
+            type: integer
+          example: [3, 7]
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/topicExtendedModel'
+        '400':
+          description: Bad request. If some data are strange
+          schema:
+            $ref: '#/definitions/error'
+        '403':
+          description: Permission denied. Authorization token are invalid
+          schema:
+            $ref: '#/definitions/error'
+        '500':
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/error'
+  
+  /tasks:
+   get:
+    description: List of all tasks in system
+    summary: /api/tasks
+    tags:
+    - Tasks
+    operationId: taskList
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - in: query
+      name: name
+      type: string
+      description: Filtration parameter by name.
+    - in: query
+      name: topic
+      type: integer
+      description: Filtration parameter by topicId.
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/taskShortModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   post:
+    description: Create new task in system. Available only for admin
+    summary: /api/tasks
+    tags:
+    - Tasks
+    operationId: taskCreate
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: Body
+      in: body
+      required: true
+      description: ''
+      schema:
+        $ref: '#/definitions/taskCreateModel'
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/taskExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /tasks/{taskId}:
+   get:
+    description: Get concrete task in system
+    summary: /api/tasks/{taskId}
+    tags:
+    - Tasks
+    operationId: taskDetails
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          $ref: '#/definitions/taskExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   patch:
+    description: Edit concrete task in system. Available only for admin
+    summary: /api/tasks/{taskId}
+    tags:
+    - Tasks
+    operationId: taskEdit
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    - name: Body
+      in: body
+      required: true
+      description: ''
+      schema:
+        $ref: '#/definitions/taskCreateModel'    
+    responses:
+      '200':
+        description: OK.
+        schema:
+          $ref: '#/definitions/taskExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   delete:
+    description: Delete of current task. Available only for admin
+    summary: /api/tasks/{taskId}
+    tags:
+    - Tasks
+    operationId: taskDelete
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: object
+          properties:
+            message: 
+              type: string
+              example: 'OK'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /tasks/{taskId}/input:
+   get:
+    description: Get input for concrete task in system
+    summary: /api/tasks/{taskId}/input
+    tags:
+    - Tasks
+    operationId: taskInputDetails
+    deprecated: false
+    produces:
+    - application/json
+    - text/plain
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: file
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   post:
+    description: Upload concrete task input in system. Available only for admin
+    summary: /api/tasks/{taskId}
+    tags:
+    - Tasks
+    operationId: taskInputCreate
+    deprecated: false
+    consumes:
+     - multipart/form-data
+    produces:
+    - application/json
+    parameters:
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    - in: formData
+      name: input
+      type: file
+      description: The file to upload. Available only text files
+    responses:
+      '200':
+        description: OK.
+        schema:
+          $ref: '#/definitions/taskExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   delete:
+    description: Delete input for concrete task. Available only for admin
+    summary: /api/tasks/{taskId}/input
+    tags:
+    - Tasks
+    operationId: taskDeleteInput
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: object
+          properties:
+            message: 
+              type: string
+              example: 'OK'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /tasks/{taskId}/output:
+   get:
+    description: Get output for concrete task in system
+    summary: /api/tasks/{taskId}/output
+    tags:
+    - Tasks
+    operationId: taskOutputDetails
+    deprecated: false
+    produces:
+    - application/json
+    - text/plain
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: file
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   post:
+    description: Upload concrete task output in system. Available only for admin
+    summary: /api/tasks/{taskId}/output
+    tags:
+    - Tasks
+    operationId: taskOutputCreate
+    deprecated: false
+    consumes:
+     - multipart/form-data
+    produces:
+    - application/json
+    parameters:
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    - in: formData
+      name: input
+      type: file
+      description: The file to upload. Available only text files
+    responses:
+      '200':
+        description: OK.
+        schema:
+          $ref: '#/definitions/taskExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+   delete:
+    description: Delete output for concrete task. Available only for admin
+    summary: /api/tasks/{taskId}/output
+    tags:
+    - Tasks
+    operationId: taskOutputDelete
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: object
+          properties:
+            message: 
+              type: string
+              example: 'OK'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  
+  /tasks/{taskId}/solution:
+   post:
+    description: Create new solution in system on task. Available only for authorized user
+    summary: /api/tasks/{taskId}/solution
+    tags:
+    - Solutions
+    operationId: solutionCreate
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: taskId
+      in: path
+      required: true
+      type: integer
+    - name: Body
+      in: body
+      required: true
+      description: ''
+      schema:
+        $ref: '#/definitions/solutionSendModel'
+    responses:
+      '200':
+        description: OK.
+        schema:
+         $ref: '#/definitions/solutionExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /solutions:
+   get:
+    description: List of all solutions in system
+    summary: /api/solutions
+    tags:
+    - Solutions
+    operationId: solutionList
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - in: query
+      name: task
+      type: string
+      description: Filtration parameter by taskId.
+    - in: query
+      name: user
+      type: integer
+      description: Filtration parameter by userId.
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/solutionExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  /solutions/{solutionId}/postmoderation:
+   post:
+    description: Postmoderate solution in system. Available only for admin
+    summary: /api/solutions/{solutionId}/postmoderation
+    tags:
+    - Solutions
+    operationId: postmoderateSolution
+    deprecated: false
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      required: true
+      default: Bearer {token}
+      type: string
+    - name: solutionId
+      in: path
+      required: true
+      type: integer
+    - name: Body
+      in: body
+      required: true
+      description: ''
+      schema:
+        type: object
+        properties:
+          verdict:
+            $ref: '#/definitions/verdictModel'
+    responses:
+      '200':
+        description: OK.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/taskExtendedModel'
+      '400':
+        description: Bad request. If some data are strange
+        schema:
+          $ref: '#/definitions/error'
+      '403':
+        description: Permission denied. Authorization token are invalid
+        schema:
+          $ref: '#/definitions/error'
+      '500':
+        description: Unexpected error.
+        schema:
+          $ref: '#/definitions/error'
+  
+  
+definitions:
+  auth:
+    title: Auth data
+    example:
+      username: MyUserName
+      password: MySuperSecretPassword
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+    required:
+    - username
+    - password
+  register:
+    title: Registration data
+    example:
+      name: Ivan
+      surname: Ivanov
+      username: MyUserName
+      password: MySuperSecretPassword
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      surname:
+        type: string
+      name:
+        type: string
+    required:
+    - username
+    - password
+    - surname
+    - name
+
+  error:
+    title: Error message
+    example:
+      message: Something went wrong in method _MethodName.
+    type: object
+    properties:
+      message:
+        type: string
+    required:
+    - message
+  
+  userShortModel:
+    title: Model for user data in index method
+    example:
+      userId: 1
+      username: MyUserName
+      roleId: 1
+    type: object
+    properties:
+      userId: 
+        type: integer
+      username:
+        type: string
+      roleId:
+        type: integer
+  userExtendedModel:
+    title: Model for detailed user data
+    example:
+      userId: 1
+      username: MyUserName
+      roleId: 1
+      name: Ivan
+      surname: Ivanov
+    type: object
+    properties:
+      userId: 
+        type: integer
+      username:
+        type: string
+      roleId:
+        type: integer
+      name:
+        type: string
+      surname:
+        type: string
+  userEditModel:
+    title: Model for edit user data. All fields can be empty (if we don't need to edit this field)
+    example:
+      password: MyNewPassword
+      name: Ivan
+      surname: Ivanov
+    type: object
+    properties:
+      password:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+      
+  role:
+    title: Model of role
+    example:
+      roleId: 1
+      name: RoleName
+    type: object
+    properties:
+      name:
+        type: string
+      roleId:
+        type: integer
+  
+  topicShortModel:
+    title: Model for topic data in index method
+    type: object
+    properties:
+      id: 
+        type: integer
+        example: 2
+      name:
+        type: string
+        example: MyTopicName
+      parentId:
+        type: integer
+        example: 1
+    required:
+      - id
+      - name
+  topicExtendedModel:
+    title: Extended model for topic data
+    type: object
+    properties:
+      id: 
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: MyFirstTopic
+      parentId:
+        type: integer
+        example: null
+      childs:
+        type: array
+        items:
+          $ref: '#/definitions/topicShortModel'
+    required:
+      - id
+      - name
+  topicCreateModel:
+    title: Model for create new topic
+    example:
+      name: MyTopicName
+      parentId: 1
+    type: object
+    properties:
+      name: 
+        type: string
+      parentId:
+        type: integer
+  
+  taskShortModel:
+    title: Short model for task data
+    example:
+      id: 2
+      name: MyTaskName
+      topicId: 1
+    type: object
+    properties:
+      id: 
+        type: integer
+      name:
+        type: string
+      topicId:
+        type: integer
+    required:
+      - id
+      - name
+  taskCreateModel:
+    title: Short model for create task
+    type: object
+    properties:
+      name:
+        type: string
+        example: MyTaskName
+      topicId:
+        type: integer
+        example: 1
+      description:
+        type: string
+        example: It's my description of task
+      price:
+        type: integer
+        example: 0
+  taskExtendedModel:
+    title: Extended model for task data
+    example:
+      id: 2
+      name: MyTaskName
+      topicId: 1
+      description: 'Example of task description'
+      price: 0
+      isDraft: false
+    type: object
+    properties:
+      id: 
+        type: integer
+      name:
+        type: string
+      topicId:
+        type: integer
+      description:
+        type: string
+      isDraft:
+        type: boolean
+    required:
+      - id
+      - name
+      - topicId
+      - description
+
+  solutionExtendedModel:
+    title: Extended model for solution data
+    type: object
+    properties:
+      id: 
+        type: integer
+        example: 2
+      sourceCode:
+        type: string
+        example: 'print("Hello world!")'
+      programmingLanguage:
+        type: string
+        enum: ['Python', 'C++', 'C#', 'Java']
+        example: 'Python'
+      verdict:
+        $ref: '#/definitions/verdictModel'
+      authorId:
+        type: integer
+        example: 1
+      taskId:
+        type: integer
+        example: 2
+    required:
+      - id
+      - sourceCode
+      - programmingLanguage
+      - verdict
+      - authorId
+      - taskId
+  solutionSendModel:
+    title: Model for send solution data
+    type: object
+    properties:
+      sourceCode:
+        type: string
+        example: 'print("Hello world!")'
+      programmingLanguage:
+        type: string
+        enum: ['Python', 'C++', 'C#', 'Java']
+        example: 'Python'
+    required:
+      - sourceCode
+      - programmingLanguage
+  verdictModel:
+    title: Model of verdicts for solutions
+    type: string
+    enum: ['Pending', 'OK', 'Rejected']
+    example: 'Pending'
+tags:
+- name: Auth
+- name: User Data
+- name: Roles
+- name: Topics
+- name: Tasks
+- name: Solutions
+# Added by API Auto Mocking Plugin
+host: localhost:8080
+basePath: /api
+schemes:
+ - http
